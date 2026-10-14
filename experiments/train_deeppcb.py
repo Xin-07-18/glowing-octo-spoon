@@ -30,6 +30,7 @@ def main() -> None:
     ap.add_argument("--batch", type=int, default=16)
     ap.add_argument("--seed", type=int, default=2026)
     ap.add_argument("--workers", type=int, default=2)
+    ap.add_argument("--device", default="cpu", help="Ultralytics device, e.g. cpu, 0, or 0,1")
     ap.add_argument("--project", type=Path, default=Path("runs/deeppcb"))
     args = ap.parse_args()
     data = make_data_yaml(args.data)
@@ -42,12 +43,12 @@ def main() -> None:
         model = YOLO("yolo11n.pt")
     run_name = f"{args.model}_e{args.epochs}_s{args.seed}"
     result = model.train(data=str(data), epochs=args.epochs, imgsz=args.imgsz, batch=args.batch,
-                         workers=args.workers, seed=args.seed, deterministic=True, device="cpu",
+                         workers=args.workers, seed=args.seed, deterministic=True, device=args.device,
                          project=str(args.project), name=run_name, cache=False,
                          plots=True, verbose=True, pretrained=False)
     best = Path(result.save_dir) / "weights" / "best.pt"
     test = YOLO(str(best)).val(data=str(data), split="test", imgsz=args.imgsz, batch=args.batch,
-                               device="cpu", workers=args.workers, plots=True,
+                               device=args.device, workers=args.workers, plots=True,
                                project=str(args.project), name=run_name + "_test")
     summary = {
         "model": args.model, "epochs": args.epochs, "imgsz": args.imgsz,
